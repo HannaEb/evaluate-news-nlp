@@ -1,16 +1,36 @@
 function handleSubmit(event) {
     event.preventDefault()
 
-    // check what text was put into the form field
-    let formText = document.getElementById('name').value
-    Client.checkForName(formText)
+    let formText = document.getElementById('text').value;
 
-    console.log("::: Form Submitted :::")
-    fetch('http://localhost:8081/test')
-    .then(res => res.json())
-    .then(function(res) {
-        document.getElementById('results').innerHTML = res.message
+    const newLink = `http://localhost:8081/add?ff=${formText}`;
+    Client.checkForText(formText)
+
+    postData(newLink)
+    .then((data) => {
+        console.log(data);
     })
+}
+
+const postData = async (url= '') => {
+    const res = await fetch(url, {
+        method: 'POST', 
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    try {
+        const newData = await res.json();
+        console.log(newData);
+        document.getElementById('agreement').innerHTML = `${newData.agreement}`
+        document.getElementById('subjectivity').innerHTML = `${newData.subjectivity}`
+        document.getElementById('confidence').innerHTML = `${newData.confidence}`
+        document.getElementById('irony').innerHTML = `${newData.irony}`
+        return newData
+    } catch(error) {
+        console.log('error', error)
+    }
 }
 
 export { handleSubmit }
