@@ -11,19 +11,19 @@ const express = require('express')
 const app = express()
 
 // Configure express to use body-parser
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+const bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 // Cors for cross origin allowance
-const cors = require('cors');
-app.use(cors({origin: 'http://localhost:8080'}));
+const cors = require('cors')
+app.use(cors())
 
 // Initialise the main project folder
 app.use(express.static('dist'))
 
 app.get('/', function (req, res) {
-    res.sendFile(path.resolve('dist/index.html'))
+    res.sendFile('dist/index.html')
 })
 
 //Set up server
@@ -32,52 +32,43 @@ app.listen(8081, function () {
 })
 
 // Declare variables
-const baseURL = 'https://api.meaningcloud.com/sentiment-2.1';
-let apiKey = process.env.API_KEY;
+let projectData = {}
+const baseURL = 'https://api.meaningcloud.com/sentiment-2.1?'
+let apiKey = process.env.API_KEY
 const lang = 'en'
 
-// POST route
-app.post('/add', async (req, res) => {
-    const text = req.query.ff;
-    const data = await postData(baseURL, {key: apiKey , txt: text , lang: lang});
-    res.send(data);
-});
+// POST request
+const postData = (req, res) => {
+  const text = req.body.txt
+  const apiUrl = baseURL+'key='+apiKey+'&txt='+text+'&lang='+lang;
 
-const postData = async (url ='', data = {}) => {
-    const res = await fetch(url, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    })
-    try {
-        const newData = await res.json();
-        console.log(newData);
-        return newData
-    } catch(error) {
-        console.log('error', error);
-    }  
+  fetchData(apiUrl)
+  .then(data => {
+    projectData = {
+      agreement: data.agreement,
+      confidence: data.confidence,
+      irony: data.irony,
+      subjectivity: data.subjectivity,
+      text: text
+    }
+  })
+  .then(() => {
+    res.send(projectData)
+  })
 }
 
-// const postData=async (url='',data={})=>{
-//     const response=await fetch(url,{
-//         method: 'POST', // The method
-//         credentials:'same-origin',
-//         headers:{
-//             'Content-Type':'application/json',
-//         },
-//         body:JSON.stringify(data),
-//     });
-//     try{
-//         const newData=await response.json();
-  
-//         console.log(newData);
-  
-//        return newData
-//     } catch(error){
-//         console.log("error",error);
-//     }
-  
-//   }
+const fetchData = async (url) => {
+  const res = await fetch(url, {
+    method: 'POST',
+    redirect: 'follow'
+  })
+  try {
+    const newData = await res.json()
+    return newData
+  } catch(error) {
+    console.log('error', error)
+  }
+}
+
+// POST route
+app.post('/postData', postData)
