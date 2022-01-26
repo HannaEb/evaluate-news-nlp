@@ -32,4 +32,4 @@ const postData = async (data) => {
     }
 }
 
-export { handleSubmit }
+export { handleSubmit, postData }
