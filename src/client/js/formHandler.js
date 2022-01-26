@@ -1,4 +1,4 @@
-function handleSubmit(event) {
+const handleSubmit = event => {
   event.preventDefault()
 
   let formText = document.getElementById('text').value;
